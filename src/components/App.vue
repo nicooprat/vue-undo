@@ -3,6 +3,7 @@
 <template>
   <section class="todoapp" @keydown.left.prevent.stop="undo" @keydown.right.prevent.stop="redo">
     <h1>todos</h1>
+    <h2>Delete a todo to be able to revert it</h2>
     <div>
       <header class="header">
         <input
@@ -158,6 +159,10 @@ h1 {
   -webkit-text-rendering: optimizeLegibility;
   -moz-text-rendering: optimizeLegibility;
   text-rendering: optimizeLegibility;
+}
+
+h2 {
+  text-align: center;
 }
 
 nav {
