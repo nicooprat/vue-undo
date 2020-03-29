@@ -24,6 +24,7 @@
 </template>
 
 <script>
+import { Message } from 'element-ui';
 import { mapActions } from 'vuex';
 import { record, revert } from '@/utils/diff';
 
@@ -63,9 +64,31 @@ export default {
         this.$store.dispatch('removeTodo', todo);
         done();
       }).then((patch) => {
-        setTimeout(() => {
-          revert(patch);
-        }, 1000);
+        const h = this.$createElement;
+        const msg = Message({
+          message: h('p', {
+            style: {
+              flexGrow: '1',
+              display: 'flex',
+              alignItems: 'center',
+            },
+          }, [
+            h('span', `Todo "${todo.text}" deleted.`),
+            h('button', {
+              style: {
+                textDecoration: 'underline',
+                marginLeft: 'auto',
+                cursor: 'pointer',
+              },
+              on: {
+                click() {
+                  msg.close();
+                  revert(patch);
+                },
+              },
+            }, 'Revert'),
+          ]),
+        });
       });
     },
 
