@@ -24,15 +24,17 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
-export default {
-  name: "Todo",
+import { mapActions } from 'vuex';
+import { record, revert } from '@/utils/diff';
 
-  props: ["todo"],
+export default {
+  name: 'Todo',
+
+  props: ['todo'],
 
   data() {
     return {
-      editing: false
+      editing: false,
     };
   },
 
@@ -50,11 +52,22 @@ export default {
         // await context.$nextTick()
         // el.focus()
       }
-    }
+    },
   },
 
   methods: {
-    ...mapActions(["editTodo", "toggleTodo", "removeTodo"]),
+    ...mapActions(['editTodo', 'toggleTodo']),
+
+    removeTodo(todo) {
+      record(this.$store.state, 'todos', (done) => {
+        this.$store.dispatch('removeTodo', todo);
+        done();
+      }).then((patch) => {
+        setTimeout(() => {
+          revert(patch);
+        }, 1000);
+      });
+    },
 
     doneEdit(e) {
       const value = e.target.value.trim();
@@ -64,7 +77,7 @@ export default {
       } else if (this.editing) {
         this.editTodo({
           todo,
-          value
+          value,
         });
         this.editing = false;
       }
@@ -73,7 +86,7 @@ export default {
     cancelEdit(e) {
       e.target.value = this.todo.text; // ul事件委托，e.target指向触发事件的元素<li>, e.currentTarget和this指向绑定事件的元素<ul>
       this.editing = false;
-    }
-  }
+    },
+  },
 };
 </script>

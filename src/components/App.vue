@@ -4,21 +4,6 @@
   <section class="todoapp" @keydown.left.prevent.stop="undo" @keydown.right.prevent.stop="redo">
     <h1>todos</h1>
     <div>
-      <p><strong>Click</strong> on a patch to time travel. <strong>Alt+Click</strong> to reapply the patch.</p>
-      <nav>
-        <button @click="travel" :class="cursor === -1 && 'active'">0</button>
-        <button
-          v-for="(patchId, index) in history"
-          :key="patchId"
-          :class="index === cursor && 'active'"
-          @click.exact="travel(patchId)"
-          @click.alt="reapply(patchId)">{{ patchId }}</button>
-      </nav>
-      <nav>
-        <button @click="undo" :disabled="!canUndo">undo</button>
-        <button @click="redo" :disabled="!canRedo">redo</button>
-      </nav>
-
       <header class="header">
         <input
           class="new-todo"
@@ -98,8 +83,6 @@ export default {
   },
 
   computed: {
-    ...mapState('history', ['history', 'cursor']),
-    ...mapGetters('history', ['canUndo', 'canRedo']),
     todos() {
       return this.$store.state.todos;
     },
@@ -121,7 +104,6 @@ export default {
 
   methods: {
     ...mapActions(['toggleAll', 'clearCompleted']),
-    ...mapActions('history', ['undo', 'redo', 'travel', 'reapply']),
     addTodo(e) {
       const text = e.target.value;
       if (text.trim()) {
