@@ -61,7 +61,8 @@
 
 <script>
 import { mapActions } from 'vuex';
-import { record, reapply } from '@/utils/diff';
+import { Message } from 'element-ui';
+import { record, revert, reapply } from '@/utils/diff';
 import TodoItem from './TodoItem.vue';
 
 const filters = {
@@ -110,7 +111,39 @@ export default {
   },
 
   methods: {
-    ...mapActions(['toggleAll', 'clearCompleted']),
+    ...mapActions(['toggleAll']),
+    clearCompleted() {
+      record(this.$store.state, 'todos', (done) => {
+        this.$store.dispatch('clearCompleted');
+        done();
+      }).then((patch) => {
+        const h = this.$createElement;
+        const msg = Message({
+          message: h('p', {
+            style: {
+              flexGrow: '1',
+              display: 'flex',
+              alignItems: 'center',
+            },
+          }, [
+            h('span', 'Completed todos cleared.'),
+            h('button', {
+              style: {
+                textDecoration: 'underline',
+                marginLeft: 'auto',
+                cursor: 'pointer',
+              },
+              on: {
+                click() {
+                  msg.close();
+                  revert(patch);
+                },
+              },
+            }, 'Revert'),
+          ]),
+        });
+      });
+    },
     addTodo(e) {
       record(this.$store.state, 'todos', (done) => {
         const text = e.target.value;
