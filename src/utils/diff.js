@@ -1,13 +1,13 @@
 import Vue from 'vue';
 import { cloneDeep } from 'lodash';
-import { diff, revertChange } from 'deep-diff';
+import { diff, patch, reverse } from 'jsondiffpatch';
 
 export const record = (source, target, callback) => {
-  const oldSource = cloneDeep(source);
+  const oldSource = cloneDeep(source[target]);
   return new Promise((resolve) => {
     callback(() => {
-      const newSource = cloneDeep(source);
-      const changes = diff(oldSource, newSource).filter(change => change.path[0] === target);
+      const newSource = cloneDeep(source[target]);
+      const changes = diff(oldSource, newSource);
       resolve({
         changes,
         source,
@@ -19,6 +19,6 @@ export const record = (source, target, callback) => {
 
 export const revert = ({ source, target, changes }) => {
   const sourceClone = cloneDeep(source);
-  changes.forEach(change => revertChange(sourceClone, true, change));
+  patch(sourceClone[target], reverse(changes));
   Vue.set(source, target, sourceClone[target]);
 };
