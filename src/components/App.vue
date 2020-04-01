@@ -1,9 +1,12 @@
 <style src="../assets/index.css"></style>
 
 <template>
-  <section class="todoapp" @keydown.left.prevent.stop="undo" @keydown.right.prevent.stop="redo">
+  <section class="todoapp">
     <h1>todos</h1>
     <h2>Delete a todo to be able to revert it</h2>
+    <nav>
+      <button :disabled="!lastPatch" @click="redo">Add last todo again</button>
+    </nav>
     <div>
       <header class="header">
         <input
@@ -57,7 +60,8 @@
 </template>
 
 <script>
-import { mapActions, mapState, mapGetters } from 'vuex';
+import { mapActions } from 'vuex';
+import { record, reapply } from '@/utils/diff';
 import TodoItem from './TodoItem.vue';
 
 const filters = {
@@ -75,12 +79,14 @@ export default {
     return {
       visibility: 'all',
       filters,
+      lastPatch: null,
     };
   },
 
   mounted() {
-    this.$store.dispatch('addTodo', 'test 1');
-    this.$store.dispatch('addTodo', 'test 2');
+    // Fixtures
+    this.addTodo({ target: { value: 'test 1' } });
+    this.addTodo({ target: { value: 'test 2' } });
   },
 
   computed: {
@@ -106,11 +112,19 @@ export default {
   methods: {
     ...mapActions(['toggleAll', 'clearCompleted']),
     addTodo(e) {
-      const text = e.target.value;
-      if (text.trim()) {
-        this.$store.dispatch('addTodo', text);
-      }
-      e.target.value = '';
+      record(this.$store.state, 'todos', (done) => {
+        const text = e.target.value;
+        if (text.trim()) {
+          this.$store.dispatch('addTodo', text);
+        }
+        e.target.value = '';
+        done();
+      }).then((patch) => {
+        this.lastPatch = patch;
+      });
+    },
+    redo() {
+      reapply(this.lastPatch);
     },
   },
 };
@@ -176,7 +190,6 @@ nav button {
   padding: .65em 1.15em;
   border: 1px solid grey;
   margin-left: -1px;
-  cursor: pointer;
   position: relative;
   z-index: 1;
   text-transform: uppercase;
@@ -185,6 +198,7 @@ nav button {
 nav button:not([disabled]):hover,
 nav button:not([disabled]):focus {
   background-color: rgba(0,0,0,.1);
+  cursor: pointer;
 }
 
 nav button.active {

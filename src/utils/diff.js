@@ -22,3 +22,9 @@ export const revert = ({ source, target, changes }) => {
   patch(sourceClone[target], reverse(changes));
   Vue.set(source, target, sourceClone[target]);
 };
+
+export const reapply = ({ source, target, changes }) => {
+  const sourceClone = cloneDeep(source);
+  patch(sourceClone[target], changes);
+  Vue.set(source, target, sourceClone[target]);
+};
